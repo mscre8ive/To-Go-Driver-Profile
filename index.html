@@ -258,7 +258,7 @@
   <div class="control-panel">
     <div class="app-title">
       <h1>Driver Card Engine</h1>
-      <p>Drag image directly on the flyer preview window to reposition.</p>
+      <p>Drag your image directly on the live output window to adjust its position.</p>
     </div>
 
     <div class="photo-upload-section">
@@ -322,6 +322,7 @@
   const canvas = document.getElementById('flyerCanvas');
   const ctx = canvas.getContext('2d');
   
+  // Hardcoded coordinates pinpointed to match the 'togopr.jpg' layout template
   const circleX = 710;
   const circleY = 285;
   const radius  = 162; 
@@ -339,7 +340,7 @@
   baseImage.crossOrigin = "anonymous";
   baseImage.onload = () => { renderCanvas(); };
   
-  // Updated with your explicit background image target
+  // Strictly locked back to your intended file layout
   baseImage.src = 'togopr.jpg';
 
   function handleImage(e) {
@@ -393,12 +394,11 @@
     };
   }
 
-  view_dist_offset = 40;
   function startDrag(e) {
     if (!uploadedImage) return;
     const coords = getCanvasCoords(e);
     const dist = Math.sqrt((coords.x - circleX)**2 + (coords.y - circleY)**2);
-    if (dist <= radius + view_dist_offset) {
+    if (dist <= radius + 50) {
       isDragging = true;
       startX = coords.x - imgX;
       startY = coords.y - imgY;
@@ -456,20 +456,20 @@
     ctx.textAlign = "left";
     ctx.fillStyle = "#111111";
 
-    // 1. Text Field: Name
+    // 1. Full Name Text Line Layout
     ctx.textBaseline = "middle";
     ctx.font = '700 28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText(valName, 495, 518);
+    ctx.fillText(valName, 510, 488);
 
-    // 2. Text Field: Destination City
-    ctx.textBaseline = "top";
+    // 2. Destination Input Line Layout
+    ctx.textBaseline = "middle";
     ctx.font = '500 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText(valDest, 475, 634);
+    ctx.fillText(valDest, 488, 615);
 
-    // 3. Text Field: Pick Up From
-    ctx.textBaseline = "top";
+    // 3. Cities Collection Line Layout
+    ctx.textBaseline = "middle";
     ctx.font = '500 21px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText(valPick, 475, 735);
+    ctx.fillText(valPick, 488, 706);
   }
 
   function downloadFlyer() {
