@@ -9,8 +9,8 @@
       --brand-yellow: #dca00c;
       --brand-yellow-dark: #b88204;
       --brand-blue: #0084ff;
-      --glass-base: rgba(255, 255, 255, 0.45);
-      --glass-border: rgba(255, 255, 255, 0.6);
+      --glass-base: rgba(255, 255, 255, 0.55);
+      --glass-border: rgba(255, 255, 255, 0.7);
       --glass-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
       --text-main: #1f2937;
       --text-muted: #6b7280;
@@ -25,18 +25,18 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2rem 1.5rem;
+      padding: 2.5rem 1.5rem;
       color: var(--text-main);
     }
 
     .app-layout {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1.1fr 1fr;
       gap: 2.5rem;
       width: 100%;
-      max-width: 1100px;
+      max-width: 1150px;
       margin: auto;
-      align-items: center;
+      align-items: start;
     }
 
     .control-panel {
@@ -47,6 +47,8 @@
       border-radius: 32px;
       box-shadow: var(--glass-shadow);
       padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
     }
 
     .app-title h1 {
@@ -59,11 +61,11 @@
     .app-title p {
       font-size: 0.9rem;
       color: var(--text-muted);
-      margin-bottom: 2rem;
+      margin-bottom: 1.75rem;
     }
 
     .photo-upload-section {
-      background: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.6);
       border: 1px dashed rgba(0, 0, 0, 0.1);
       padding: 1.25rem;
       border-radius: 20px;
@@ -74,7 +76,7 @@
       display: flex;
       align-items: center;
       gap: 1.25rem;
-      margin-bottom: 1rem;
+      margin-bottom: 0.75rem;
     }
 
     .avatar-preview-box {
@@ -136,6 +138,7 @@
       display: none;
       flex-direction: column;
       gap: 6px;
+      margin-top: 0.5rem;
     }
     .slider-container label {
       font-size: 0.8rem;
@@ -197,21 +200,30 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      margin-top: 1.75rem;
+      margin-top: 0.5rem;
       box-shadow: 0 4px 14px rgba(220, 160, 12, 0.3);
       transition: all 0.2s ease;
     }
 
     .btn-download:hover {
       background: var(--brand-yellow-dark);
-      transform: translateY(-1px);
       box-shadow: 0 6px 20px rgba(220, 160, 12, 0.4);
+    }
+
+    .btn-download svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 2.5;
+      fill: none;
     }
 
     .preview-workspace {
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
+      position: sticky;
+      top: 2.5rem;
     }
 
     .preview-window-header {
@@ -228,7 +240,6 @@
       border: 1px solid var(--glass-border);
       box-shadow: 0 20px 40px -15px rgba(0,0,0,0.15);
       background: #cbd5e1;
-      position: relative;
     }
 
     canvas {
@@ -248,6 +259,7 @@
         max-width: 500px;
       }
       .control-panel { padding: 1.75rem 1.5rem; }
+      .preview-workspace { position: static; }
     }
   </style>
 </head>
@@ -258,7 +270,7 @@
   <div class="control-panel">
     <div class="app-title">
       <h1>Driver Card Engine</h1>
-      <p>Drag your image directly on the live output window to adjust its position.</p>
+      <p>Drag your photo directly on the live flyer canvas window to adjust placement.</p>
     </div>
 
     <div class="photo-upload-section">
@@ -322,10 +334,10 @@
   const canvas = document.getElementById('flyerCanvas');
   const ctx = canvas.getContext('2d');
   
-  // Hardcoded coordinates pinpointed to match the 'togopr.jpg' layout template
-  const circleX = 710;
-  const circleY = 285;
-  const radius  = 162; 
+  // Realigned configuration parameters for 'togopr.jpg' template layout mapping
+  const circleX = 665;
+  const circleY = 338;
+  const radius  = 174; 
 
   const baseImage = new Image();
   let uploadedImage = null;
@@ -339,8 +351,6 @@
 
   baseImage.crossOrigin = "anonymous";
   baseImage.onload = () => { renderCanvas(); };
-  
-  // Strictly locked back to your intended file layout
   baseImage.src = 'togopr.jpg';
 
   function handleImage(e) {
@@ -456,20 +466,20 @@
     ctx.textAlign = "left";
     ctx.fillStyle = "#111111";
 
-    // 1. Full Name Text Line Layout
+    // 1. Full Name (Aligned inside white entry capsule line field)
     ctx.textBaseline = "middle";
     ctx.font = '700 28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText(valName, 510, 488);
+    ctx.fillText(valName, 510, 518);
 
-    // 2. Destination Input Line Layout
+    // 2. Destination City (Aligned cleanly inside the first yellow block)
     ctx.textBaseline = "middle";
     ctx.font = '500 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText(valDest, 488, 615);
+    ctx.fillText(valDest, 505, 638);
 
-    // 3. Cities Collection Line Layout
+    // 3. Picking Up From Cities List (Aligned cleanly inside the second yellow block)
     ctx.textBaseline = "middle";
     ctx.font = '500 21px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText(valPick, 488, 706);
+    ctx.fillText(valPick, 505, 735);
   }
 
   function downloadFlyer() {
