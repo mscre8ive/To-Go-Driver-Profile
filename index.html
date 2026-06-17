@@ -1,496 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>To-Go Mobility — Custom Flyer Generator</title>
-  <style>
-    :root {
-      --brand-yellow: #dca00c;
-      --brand-yellow-dark: #b88204;
-      --brand-blue: #0084ff;
-      --glass-base: rgba(255, 255, 255, 0.55);
-      --glass-border: rgba(255, 255, 255, 0.7);
-      --glass-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
-      --text-main: #1f2937;
-      --text-muted: #6b7280;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2.5rem 1.5rem;
-      color: var(--text-main);
-    }
-
-    .app-layout {
-      display: grid;
-      grid-template-columns: 1.1fr 1fr;
-      gap: 2.5rem;
-      width: 100%;
-      max-width: 1150px;
-      margin: auto;
-      align-items: start;
-    }
-
-    .control-panel {
-      background: var(--glass-base);
-      backdrop-filter: blur(20px) saturate(190%);
-      -webkit-backdrop-filter: blur(20px) saturate(190%);
-      border: 1px solid var(--glass-border);
-      border-radius: 32px;
-      box-shadow: var(--glass-shadow);
-      padding: 2.5rem;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .app-title h1 {
-      font-size: 1.5rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 0.25rem;
-    }
-
-    .app-title p {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin-bottom: 1.75rem;
-    }
-
-    .photo-upload-section {
-      background: rgba(255, 255, 255, 0.6);
-      border: 1px dashed rgba(0, 0, 0, 0.1);
-      padding: 1.25rem;
-      border-radius: 20px;
-      margin-bottom: 1.5rem;
-    }
-
-    .upload-row {
-      display: flex;
-      align-items: center;
-      gap: 1.25rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .avatar-preview-box {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      background: #e2e8f0;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid #fff;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      flex-shrink: 0;
-    }
-
-    .avatar-preview-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .avatar-preview-box svg {
-      width: 28px;
-      height: 28px;
-      fill: var(--text-muted);
-    }
-
-    .upload-btn-wrapper {
-      position: relative;
-      overflow: hidden;
-      display: inline-block;
-    }
-
-    .btn-upload {
-      border: none;
-      color: white;
-      background: var(--brand-yellow);
-      padding: 10px 20px;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .btn-upload:hover { background: var(--brand-yellow-dark); }
-
-    .upload-btn-wrapper input[type=file] {
-      font-size: 100px;
-      position: absolute;
-      left: 0;
-      top: 0;
-      opacity: 0;
-      cursor: pointer;
-    }
-
-    .slider-container {
-      display: none;
-      flex-direction: column;
-      gap: 6px;
-      margin-top: 0.5rem;
-    }
-    .slider-container label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
-    .zoom-slider {
-      width: 100%;
-      accent-color: var(--brand-yellow);
-      height: 6px;
-      border-radius: 3px;
-      cursor: pointer;
-    }
-
-    .form-group {
-      margin-bottom: 1.25rem;
-    }
-
-    .label-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 6px;
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    .char-counter { color: var(--text-muted); font-weight: normal; }
-
-    input[type="text"] {
-      width: 100%;
-      height: 48px;
-      padding: 0 16px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      border: 1px solid var(--glass-border);
-      border-radius: 14px;
-      outline: none;
-      background: rgba(255, 255, 255, 0.7);
-      transition: all 0.2s;
-    }
-
-    input[type="text"]:focus {
-      border-color: var(--brand-yellow);
-      background: #fff;
-      box-shadow: 0 0 0 4px rgba(220, 160, 12, 0.15);
-    }
-
-    .btn-download {
-      width: 100%;
-      height: 52px;
-      background: var(--brand-yellow);
-      color: #fff;
-      border: none;
-      border-radius: 16px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 0.5rem;
-      box-shadow: 0 4px 14px rgba(220, 160, 12, 0.3);
-      transition: all 0.2s ease;
-    }
-
-    .btn-download:hover {
-      background: var(--brand-yellow-dark);
-      box-shadow: 0 6px 20px rgba(220, 160, 12, 0.4);
-    }
-
-    .btn-download svg {
-      width: 20px;
-      height: 20px;
-      stroke: currentColor;
-      stroke-width: 2.5;
-      fill: none;
-    }
-
-    .preview-workspace {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      position: sticky;
-      top: 2.5rem;
-    }
-
-    .preview-window-header {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .canvas-container-frame {
-      border-radius: 28px;
-      overflow: hidden;
-      border: 1px solid var(--glass-border);
-      box-shadow: 0 20px 40px -15px rgba(0,0,0,0.15);
-      background: #cbd5e1;
-    }
-
-    canvas {
-      display: block;
-      width: 100%;
-      height: auto;
-      cursor: grab;
-    }
-    canvas:active {
-      cursor: grabbing;
-    }
-
-    @media (max-width: 920px) {
-      .app-layout {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-        max-width: 500px;
-      }
-      .control-panel { padding: 1.75rem 1.5rem; }
-      .preview-workspace { position: static; }
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<style>
+  :root{--y:#dca00c;--yd:#b88204;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#f1f5f9,#e2e8f0);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem;color:#1f2937;}
+  .layout{display:grid;grid-template-columns:1fr 1.15fr;gap:2rem;width:100%;max-width:1120px;}
+  .panel{background:rgba(255,255,255,0.6);backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,0.75);border-radius:28px;box-shadow:0 12px 40px -10px rgba(0,0,0,0.08);padding:2rem;display:flex;flex-direction:column;gap:1.2rem;}
+  .ptitle h1{font-size:1.4rem;font-weight:800;letter-spacing:-0.02em;}
+  .ptitle p{font-size:0.83rem;color:#6b7280;margin-top:3px;}
+  .photo-sec{background:rgba(255,255,255,0.5);border:1px dashed rgba(0,0,0,0.1);border-radius:18px;padding:1rem;}
+  .urow{display:flex;align-items:center;gap:1rem;margin-bottom:.7rem;}
+  .avbox{width:58px;height:58px;border-radius:50%;background:#e2e8f0;overflow:hidden;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.08);flex-shrink:0;}
+  .avbox img{width:100%;height:100%;object-fit:cover;}
+  .avbox svg{width:26px;height:26px;fill:#9ca3af;}
+  .uwrap{position:relative;overflow:hidden;display:inline-block;}
+  .upbtn{border:none;color:#fff;background:var(--y);padding:9px 18px;border-radius:10px;font-size:.875rem;font-weight:600;cursor:pointer;transition:background .2s;}
+  .upbtn:hover{background:var(--yd);}
+  .uwrap input{font-size:100px;position:absolute;left:0;top:0;opacity:0;cursor:pointer;}
+  .swrap{display:none;flex-direction:column;gap:5px;}
+  .swrap label{font-size:.78rem;font-weight:600;color:#6b7280;}
+  .swrap input{width:100%;accent-color:var(--y);}
+  .fg{display:flex;flex-direction:column;gap:6px;}
+  .lr{display:flex;justify-content:space-between;font-size:.82rem;font-weight:600;}
+  .cc{color:#9ca3af;font-weight:400;}
+  input[type=text]{height:46px;padding:0 14px;font-size:.9rem;font-weight:500;border:1px solid rgba(0,0,0,0.1);border-radius:12px;outline:none;background:rgba(255,255,255,0.75);transition:all .2s;width:100%;}
+  input[type=text]:focus{border-color:var(--y);background:#fff;box-shadow:0 0 0 3px rgba(220,160,12,0.15);}
+  .dlbtn{width:100%;height:50px;background:var(--y);color:#fff;border:none;border-radius:14px;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(220,160,12,0.28);transition:all .2s;}
+  .dlbtn:hover{background:var(--yd);}
+  .dlbtn svg{width:18px;height:18px;stroke:currentColor;stroke-width:2.5;fill:none;}
+  .preview{position:sticky;top:2rem;}
+  .plabel{font-size:.75rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem;}
+  .cframe{border-radius:24px;overflow:hidden;border:1px solid rgba(255,255,255,0.7);box-shadow:0 20px 50px -12px rgba(0,0,0,0.18);background:#cbd5e1;}
+  canvas{display:block;width:100%;height:auto;cursor:grab;}
+  canvas:active{cursor:grabbing;}
+  @media(max-width:860px){.layout{grid-template-columns:1fr;max-width:480px;}.preview{position:static;}}
+</style>
 </head>
 <body>
-
-<div class="app-layout">
-  
-  <div class="control-panel">
-    <div class="app-title">
-      <h1>Driver Card Engine</h1>
-      <p>Drag your photo directly on the live flyer canvas window to adjust placement.</p>
-    </div>
-
-    <div class="photo-upload-section">
-      <div class="upload-row">
-        <div class="avatar-preview-box" id="avatarBox">
-          <svg viewBox="0 0 24 24" id="placeholderIcon"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z"/></svg>
-          <img id="userAvatar" style="display: none;" src="" alt="Avatar preview" />
+<div class="layout">
+  <div class="panel">
+    <div class="ptitle"><h1>Driver Card Engine</h1><p>Upload a photo, fill in your details, then download.</p></div>
+    <div class="photo-sec">
+      <div class="urow">
+        <div class="avbox" id="avbox">
+          <svg viewBox="0 0 24 24" id="phicon"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <img id="avimg" style="display:none" src="" alt="preview"/>
         </div>
-        <div class="upload-btn-wrapper">
-          <button class="btn-upload">Upload Photo</button>
-          <input type="file" id="imageLoader" accept="image/*" onchange="handleImage(event)" />
+        <div class="uwrap">
+          <button class="upbtn">Upload Photo</button>
+          <input type="file" id="fi" accept="image/*" onchange="handleImg(event)"/>
         </div>
       </div>
-      
-      <div class="slider-container" id="zoomContainer">
-        <label for="zoomSlider">Scale Adjuster Image Profile</label>
-        <input type="range" id="zoomSlider" class="zoom-slider" min="0.1" max="3" step="0.01" value="1" oninput="adjustZoom(this.value)" />
+      <div class="swrap" id="sw">
+        <label>Scale Photo</label>
+        <input type="range" id="zs" min="0.1" max="3" step="0.01" value="1" oninput="adjZ(this.value)"/>
       </div>
     </div>
-
-    <div class="form-group">
-      <div class="label-row">
-        <label for="nameInput">Full Name</label>
-        <span class="char-counter"><strong id="nameCount">0</strong>/30</span>
-      </div>
-      <input type="text" id="nameInput" placeholder="Muhammad Sodiq Sulyman" maxlength="30" oninput="liveUpdate()" />
+    <div class="fg">
+      <div class="lr"><label>Full Name</label><span class="cc"><strong id="nc">0</strong>/30</span></div>
+      <input type="text" id="ni" placeholder="Muhammad Sodiq Sulyman" maxlength="30" oninput="lu()"/>
     </div>
-
-    <div class="form-group">
-      <div class="label-row">
-        <label for="destInput">I Drive To (Destination City)</label>
-        <span class="char-counter"><strong id="destCount">0</strong>/20</span>
-      </div>
-      <input type="text" id="destInput" placeholder="Minna" maxlength="20" oninput="liveUpdate()" />
+    <div class="fg">
+      <div class="lr"><label>I Drive To</label><span class="cc"><strong id="dc">0</strong>/20</span></div>
+      <input type="text" id="di" placeholder="Minna" maxlength="20" oninput="lu()"/>
     </div>
-
-    <div class="form-group">
-      <div class="label-row">
-        <label for="pickInput">Picking Up From (List Cities)</label>
-        <span class="char-counter"><strong id="pickCount">0</strong>/45</span>
-      </div>
-      <input type="text" id="pickInput" placeholder="Ilorin • Jebba • Mokwa • Zungeru • Bida" maxlength="45" oninput="liveUpdate()" />
+    <div class="fg">
+      <div class="lr"><label>Picking Up From</label><span class="cc"><strong id="pc">0</strong>/45</span></div>
+      <input type="text" id="pi" placeholder="Ilorin • Jebba • Mokwa • Zungeru • Bida" maxlength="45" oninput="lu()"/>
     </div>
-
-    <button class="btn-download" onclick="downloadFlyer()">
+    <button class="dlbtn" onclick="dlFlyer()">
       <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Download Driving Card
     </button>
   </div>
 
-  <div class="preview-workspace">
-    <div class="preview-window-header">Live Output Processing</div>
-    <div class="canvas-container-frame">
-      <canvas id="flyerCanvas" width="1080" height="1080"></canvas>
+  <div class="preview">
+    <div class="plabel">Live Preview</div>
+    <div class="cframe">
+      <canvas id="fc" width="1080" height="1080"></canvas>
     </div>
   </div>
-
 </div>
 
 <script>
-  const canvas = document.getElementById('flyerCanvas');
-  const ctx = canvas.getContext('2d');
-  
-  // Realigned configuration parameters for 'togopr.jpg' template layout mapping
-  const circleX = 665;
-  const circleY = 338;
-  const radius  = 174; 
+const canvas = document.getElementById('fc');
+const ctx = canvas.getContext('2d');
 
-  const baseImage = new Image();
-  let uploadedImage = null;
+// ── Template measurements from pixel-analysing togopr.jpg (1080×1080) ──
+// Profile circle: center-x=665, center-y=335, radius=170
+const CX=665, CY=335, CR=170;
 
-  let imgScale = 1.0;
-  let imgX = 0;
-  let imgY = 0;
-  let isDragging = false;
-  let startX = 0;
-  let startY = 0;
+// Text zones (measured from image 3 desired output):
+// White name capsule: x_start=468, y_center=514  (capsule runs ~468→1010, h≈55)
+// Yellow "I Drive To" box: box top≈590, box bottom≈675 → label at y≈615, value at y≈652
+// Yellow "Picking Up From" box: box top≈688, box bottom≈775 → label at y≈710, value at y≈748
 
-  baseImage.crossOrigin = "anonymous";
-  baseImage.onload = () => { renderCanvas(); };
-  baseImage.src = 'togopr.jpg';
+const ZONES = {
+  name: { x: 475, y: 514 },
+  destVal:  { x: 475, y: 652 },   // below baked-in "I Drive To:" label
+  pickVal:  { x: 475, y: 748 },   // below baked-in "Picking Up From:" label
+};
 
-  function handleImage(e) {
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      uploadedImage = new Image();
-      uploadedImage.onload = function() {
-        document.getElementById('placeholderIcon').style.display = 'none';
-        const imgEl = document.getElementById('userAvatar');
-        imgEl.src = event.target.result;
-        imgEl.style.display = 'block';
-        document.getElementById('zoomContainer').style.display = 'flex';
-        
-        imgX = 0;
-        imgY = 0;
-        
-        const aspect = uploadedImage.width / uploadedImage.height;
-        if (aspect > 1) {
-          imgScale = (radius * 2) / uploadedImage.height;
-        } else {
-          imgScale = (radius * 2) / uploadedImage.width;
-        }
-        document.getElementById('zoomSlider').value = imgScale;
-        
-        renderCanvas();
-      }
-      uploadedImage.src = event.target.result;
-    }
-    reader.readAsDataURL(e.target.files[0]);
-  }
+const base = new Image();
+let uImg=null, iS=1, iX=0, iY=0, drag=false, sX=0, sY=0;
 
-  function adjustZoom(val) {
-    imgScale = parseFloat(val);
-    renderCanvas();
-  }
+base.crossOrigin='anonymous';
+base.onload=()=>draw();
+base.src='/mnt/user-data/uploads/togopr.jpg';
 
-  function liveUpdate() {
-    renderCanvas();
-    document.getElementById('nameCount').innerText = document.getElementById('nameInput').value.length;
-    document.getElementById('destCount').innerText = document.getElementById('destInput').value.length;
-    document.getElementById('pickCount').innerText = document.getElementById('pickInput').value.length;
-  }
-
-  function getCanvasCoords(e) {
-    const rect = canvas.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    return {
-      x: (clientX - rect.left) * (canvas.width / rect.width),
-      y: (clientY - rect.top) * (canvas.height / rect.height)
+function handleImg(e){
+  const r=new FileReader();
+  r.onload=ev=>{
+    uImg=new Image();
+    uImg.onload=function(){
+      document.getElementById('phicon').style.display='none';
+      const a=document.getElementById('avimg');
+      a.src=ev.target.result; a.style.display='block';
+      document.getElementById('sw').style.display='flex';
+      iX=0; iY=0;
+      iS=uImg.width>uImg.height?(CR*2)/uImg.height:(CR*2)/uImg.width;
+      document.getElementById('zs').value=iS;
+      draw();
     };
+    uImg.src=ev.target.result;
+  };
+  r.readAsDataURL(e.target.files[0]);
+}
+
+function adjZ(v){iS=parseFloat(v);draw();}
+
+function lu(){
+  draw();
+  document.getElementById('nc').innerText=document.getElementById('ni').value.length;
+  document.getElementById('dc').innerText=document.getElementById('di').value.length;
+  document.getElementById('pc').innerText=document.getElementById('pi').value.length;
+}
+
+function xy(e){
+  const r=canvas.getBoundingClientRect();
+  const cx=e.touches?e.touches[0].clientX:e.clientX;
+  const cy=e.touches?e.touches[0].clientY:e.clientY;
+  return{x:(cx-r.left)*(1080/r.width),y:(cy-r.top)*(1080/r.height)};
+}
+
+canvas.addEventListener('mousedown',e=>{
+  if(!uImg)return;
+  const p=xy(e);
+  if(Math.hypot(p.x-CX,p.y-CY)<=CR+60){drag=true;sX=p.x-iX;sY=p.y-iY;e.preventDefault();}
+});
+canvas.addEventListener('mousemove',e=>{
+  if(!drag)return;
+  const p=xy(e);iX=p.x-sX;iY=p.y-sY;draw();e.preventDefault();
+});
+canvas.addEventListener('mouseup',()=>drag=false);
+canvas.addEventListener('mouseleave',()=>drag=false);
+canvas.addEventListener('touchstart',e=>{
+  if(!uImg)return;
+  const p=xy(e);
+  if(Math.hypot(p.x-CX,p.y-CY)<=CR+60){drag=true;sX=p.x-iX;sY=p.y-iY;e.preventDefault();}
+},{passive:false});
+canvas.addEventListener('touchmove',e=>{
+  if(!drag)return;
+  const p=xy(e);iX=p.x-sX;iY=p.y-sY;draw();e.preventDefault();
+},{passive:false});
+canvas.addEventListener('touchend',()=>drag=false);
+
+function draw(){
+  ctx.clearRect(0,0,1080,1080);
+  if(base.complete&&base.naturalWidth) ctx.drawImage(base,0,0,1080,1080);
+
+  // Clip & draw profile photo
+  if(uImg){
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(CX,CY,CR,0,Math.PI*2);
+    ctx.closePath();
+    ctx.clip();
+    const dw=uImg.width*iS, dh=uImg.height*iS;
+    ctx.drawImage(uImg, CX-dw/2+iX, CY-dh/2+iY, dw, dh);
+    ctx.restore();
   }
 
-  function startDrag(e) {
-    if (!uploadedImage) return;
-    const coords = getCanvasCoords(e);
-    const dist = Math.sqrt((coords.x - circleX)**2 + (coords.y - circleY)**2);
-    if (dist <= radius + 50) {
-      isDragging = true;
-      startX = coords.x - imgX;
-      startY = coords.y - imgY;
-      e.preventDefault();
-    }
-  }
+  const name = document.getElementById('ni').value.trim() || 'Muhammad Sodiq Sulyman';
+  const dest = document.getElementById('di').value.trim() || 'Minna';
+  const pick = document.getElementById('pi').value.trim() || 'Ilorin • Jebba • Mokwa • Zungeru • Bida';
 
-  function doDrag(e) {
-    if (!isDragging) return;
-    const coords = getCanvasCoords(e);
-    imgX = coords.x - startX;
-    imgY = coords.y - startY;
-    renderCanvas();
-    e.preventDefault();
-  }
+  ctx.save();
+  ctx.textAlign='left';
+  ctx.textBaseline='middle';
 
-  function stopDrag() {
-    isDragging = false;
-  }
+  // ── Name in white capsule ──────────────────────────────
+  ctx.fillStyle='#111111';
+  ctx.font='600 30px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+  ctx.fillText(name, ZONES.name.x, ZONES.name.y);
 
-  canvas.addEventListener('mousedown', startDrag);
-  canvas.addEventListener('mousemove', doDrag);
-  canvas.addEventListener('mouseup', stopDrag);
-  canvas.addEventListener('mouseleave', stopDrag);
+  // ── Dest value (below baked label "I Drive To:") ──────
+  ctx.fillStyle='#222222';
+  ctx.font='500 26px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+  ctx.fillText(dest, ZONES.destVal.x, ZONES.destVal.y);
 
-  canvas.addEventListener('touchstart', startDrag, {passive: false});
-  canvas.addEventListener('touchmove', doDrag, {passive: false});
-  canvas.addEventListener('touchend', stopDrag);
+  // ── Pick value (below baked label "Picking Up From:") ─
+  ctx.fillStyle='#222222';
+  ctx.font='500 24px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+  ctx.fillText(pick, ZONES.pickVal.x, ZONES.pickVal.y);
 
-  function renderCanvas() {
-    ctx.clearRect(0, 0, 1080, 1080);
-    ctx.drawImage(baseImage, 0, 0, 1080, 1080);
+  ctx.restore();
+}
 
-    if (uploadedImage) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(circleX, circleY, radius, 0, Math.PI * 2, true);
-      ctx.closePath();
-      ctx.clip();
-
-      const drawW = uploadedImage.width * imgScale;
-      const drawH = uploadedImage.height * imgScale;
-      
-      const finalX = circleX - (drawW / 2) + imgX;
-      const finalY = circleY - (drawH / 2) + imgY;
-
-      ctx.drawImage(uploadedImage, finalX, finalY, drawW, drawH);
-      ctx.restore();
-    }
-
-    const valName = document.getElementById('nameInput').value.trim() || "Muhammad Sodiq Sulyman";
-    const valDest = document.getElementById('destInput').value.trim() || "Minna";
-    const valPick = document.getElementById('pickInput').value.trim() || "Ilorin • Jebba • Mokwa • Zungeru • Bida";
-
-    ctx.textAlign = "left";
-    ctx.fillStyle = "#111111";
-
-    // 1. Full Name (Aligned inside white entry capsule line field)
-    ctx.textBaseline = "middle";
-    ctx.font = '700 28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText(valName, 510, 518);
-
-    // 2. Destination City (Aligned cleanly inside the first yellow block)
-    ctx.textBaseline = "middle";
-    ctx.font = '500 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText(valDest, 505, 638);
-
-    // 3. Picking Up From Cities List (Aligned cleanly inside the second yellow block)
-    ctx.textBaseline = "middle";
-    ctx.font = '500 21px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText(valPick, 505, 735);
-  }
-
-  function downloadFlyer() {
-    renderCanvas();
-    const nameString = document.getElementById('nameInput').value.trim() || 'Driver_Card';
-    const downloadLink = document.createElement('a');
-    downloadLink.download = 'ToGo_' + nameString.replace(/\s+/g, '_') + '.jpg';
-    downloadLink.href = canvas.toDataURL('image/jpeg', 0.95);
-    downloadLink.click();
-  }
+function dlFlyer(){
+  draw();
+  const n=document.getElementById('ni').value.trim()||'Driver_Card';
+  const a=document.createElement('a');
+  a.download='ToGo_'+n.replace(/\s+/g,'_')+'.jpg';
+  a.href=canvas.toDataURL('image/jpeg',0.95);
+  a.click();
+}
 </script>
-
 </body>
 </html>
