@@ -39,7 +39,6 @@
       align-items: center;
     }
 
-    /* Glass Control Panel Styles */
     .control-panel {
       background: var(--glass-base);
       backdrop-filter: blur(20px) saturate(190%);
@@ -63,21 +62,24 @@
       margin-bottom: 2rem;
     }
 
-    /* Photo Upload UI Section */
     .photo-upload-section {
-      display: flex;
-      align-items: center;
-      gap: 1.25rem;
       background: rgba(255, 255, 255, 0.5);
       border: 1px dashed rgba(0, 0, 0, 0.1);
-      padding: 1rem;
+      padding: 1.25rem;
       border-radius: 20px;
       margin-bottom: 1.5rem;
     }
 
+    .upload-row {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
     .avatar-preview-box {
-      width: 72px;
-      height: 72px;
+      width: 64px;
+      height: 64px;
       border-radius: 50%;
       background: #e2e8f0;
       overflow: hidden;
@@ -96,8 +98,8 @@
     }
 
     .avatar-preview-box svg {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       fill: var(--text-muted);
     }
 
@@ -130,7 +132,24 @@
       cursor: pointer;
     }
 
-    /* Form Inputs */
+    .slider-container {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .slider-container label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .zoom-slider {
+      width: 100%;
+      accent-color: var(--brand-yellow);
+      height: 6px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
     .form-group {
       margin-bottom: 1.25rem;
     }
@@ -164,7 +183,6 @@
       box-shadow: 0 0 0 4px rgba(220, 160, 12, 0.15);
     }
 
-    /* Action Download Button */
     .btn-download {
       width: 100%;
       height: 52px;
@@ -190,19 +208,6 @@
       box-shadow: 0 6px 20px rgba(220, 160, 12, 0.4);
     }
 
-    .btn-download:active { transform: translateY(1px); }
-
-    .btn-download svg {
-      width: 20px;
-      height: 20px;
-      stroke: currentColor;
-      fill: none;
-      stroke-width: 2.5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    /* Preview Workspace Window Styles */
     .preview-workspace {
       display: flex;
       flex-direction: column;
@@ -223,15 +228,19 @@
       border: 1px solid var(--glass-border);
       box-shadow: 0 20px 40px -15px rgba(0,0,0,0.15);
       background: #cbd5e1;
+      position: relative;
     }
 
     canvas {
       display: block;
       width: 100%;
       height: auto;
+      cursor: grab;
+    }
+    canvas:active {
+      cursor: grabbing;
     }
 
-    /* Device Adaptive Media Breakpoints */
     @media (max-width: 920px) {
       .app-layout {
         grid-template-columns: 1fr;
@@ -249,17 +258,24 @@
   <div class="control-panel">
     <div class="app-title">
       <h1>Driver Card Engine</h1>
-      <p>Fill out your details to dynamically generate your card.</p>
+      <p>Drag image directly on the flyer preview window to reposition.</p>
     </div>
 
     <div class="photo-upload-section">
-      <div class="avatar-preview-box" id="avatarBox">
-        <svg viewBox="0 0 24 24" id="placeholderIcon"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z"/></svg>
-        <img id="userAvatar" style="display: none;" src="" alt="User profile photo setup pointer" />
+      <div class="upload-row">
+        <div class="avatar-preview-box" id="avatarBox">
+          <svg viewBox="0 0 24 24" id="placeholderIcon"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z"/></svg>
+          <img id="userAvatar" style="display: none;" src="" alt="Avatar preview" />
+        </div>
+        <div class="upload-btn-wrapper">
+          <button class="btn-upload">Upload Photo</button>
+          <input type="file" id="imageLoader" accept="image/*" onchange="handleImage(event)" />
+        </div>
       </div>
-      <div class="upload-btn-wrapper">
-        <button class="btn-upload">Upload Photo</button>
-        <input type="file" id="imageLoader" accept="image/*" onchange="handleImage(event)" />
+      
+      <div class="slider-container" id="zoomContainer">
+        <label for="zoomSlider">Scale Adjuster Image Profile</label>
+        <input type="range" id="zoomSlider" class="zoom-slider" min="0.1" max="3" step="0.01" value="1" oninput="adjustZoom(this.value)" />
       </div>
     </div>
 
@@ -306,40 +322,48 @@
   const canvas = document.getElementById('flyerCanvas');
   const ctx = canvas.getContext('2d');
   
-  // Coordinate anchors calibrated precisely to match the layout templates
-  const circleX = 712;
+  const circleX = 710;
   const circleY = 285;
   const radius  = 162; 
 
   const baseImage = new Image();
   let uploadedImage = null;
 
+  let imgScale = 1.0;
+  let imgX = 0;
+  let imgY = 0;
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+
   baseImage.crossOrigin = "anonymous";
   baseImage.onload = () => { renderCanvas(); };
-  baseImage.onerror = () => {
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(0, 0, 1080, 1080);
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 32px sans-serif';
-    ctx.textBaseline = 'middle';
-    ctx.textAlign = 'center';
-    ctx.fillText('Image', 540, 540);
-  };
   
-  // Points to your clean blank template image
+  // Updated with your explicit background image target
   baseImage.src = 'togopr.jpg';
 
-  // Handles image ingestion, preview container masking, and storage reference mapping parameters
   function handleImage(e) {
     const reader = new FileReader();
     reader.onload = function(event) {
       uploadedImage = new Image();
       uploadedImage.onload = function() {
-        // UI updates to state elements inside our upload container box
         document.getElementById('placeholderIcon').style.display = 'none';
         const imgEl = document.getElementById('userAvatar');
         imgEl.src = event.target.result;
         imgEl.style.display = 'block';
+        document.getElementById('zoomContainer').style.display = 'flex';
+        
+        imgX = 0;
+        imgY = 0;
+        
+        const aspect = uploadedImage.width / uploadedImage.height;
+        if (aspect > 1) {
+          imgScale = (radius * 2) / uploadedImage.height;
+        } else {
+          imgScale = (radius * 2) / uploadedImage.width;
+        }
+        document.getElementById('zoomSlider').value = imgScale;
+        
         renderCanvas();
       }
       uploadedImage.src = event.target.result;
@@ -347,19 +371,67 @@
     reader.readAsDataURL(e.target.files[0]);
   }
 
+  function adjustZoom(val) {
+    imgScale = parseFloat(val);
+    renderCanvas();
+  }
+
   function liveUpdate() {
     renderCanvas();
-    // Character counters mechanics mapping pipeline updates live counters
     document.getElementById('nameCount').innerText = document.getElementById('nameInput').value.length;
     document.getElementById('destCount').innerText = document.getElementById('destInput').value.length;
     document.getElementById('pickCount').innerText = document.getElementById('pickInput').value.length;
   }
 
+  function getCanvasCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: (clientX - rect.left) * (canvas.width / rect.width),
+      y: (clientY - rect.top) * (canvas.height / rect.height)
+    };
+  }
+
+  view_dist_offset = 40;
+  function startDrag(e) {
+    if (!uploadedImage) return;
+    const coords = getCanvasCoords(e);
+    const dist = Math.sqrt((coords.x - circleX)**2 + (coords.y - circleY)**2);
+    if (dist <= radius + view_dist_offset) {
+      isDragging = true;
+      startX = coords.x - imgX;
+      startY = coords.y - imgY;
+      e.preventDefault();
+    }
+  }
+
+  function doDrag(e) {
+    if (!isDragging) return;
+    const coords = getCanvasCoords(e);
+    imgX = coords.x - startX;
+    imgY = coords.y - startY;
+    renderCanvas();
+    e.preventDefault();
+  }
+
+  function stopDrag() {
+    isDragging = false;
+  }
+
+  canvas.addEventListener('mousedown', startDrag);
+  canvas.addEventListener('mousemove', doDrag);
+  canvas.addEventListener('mouseup', stopDrag);
+  canvas.addEventListener('mouseleave', stopDrag);
+
+  canvas.addEventListener('touchstart', startDrag, {passive: false});
+  canvas.addEventListener('touchmove', doDrag, {passive: false});
+  canvas.addEventListener('touchend', stopDrag);
+
   function renderCanvas() {
     ctx.clearRect(0, 0, 1080, 1080);
     ctx.drawImage(baseImage, 0, 0, 1080, 1080);
 
-    // Render clipped profile picture inside the circular container zone
     if (uploadedImage) {
       ctx.save();
       ctx.beginPath();
@@ -367,47 +439,37 @@
       ctx.closePath();
       ctx.clip();
 
-      // Calculation tracking logic maintaining pristine source image aspect ratios mapping aspect box scales
-      const aspect = uploadedImage.width / uploadedImage.height;
-      let drawW, drawH, drawX, drawY;
+      const drawW = uploadedImage.width * imgScale;
+      const drawH = uploadedImage.height * imgScale;
+      
+      const finalX = circleX - (drawW / 2) + imgX;
+      const finalY = circleY - (drawH / 2) + imgY;
 
-      if (aspect > 1) {
-        drawH = radius * 2;
-        drawW = drawH * aspect;
-        drawX = circleX - (drawW / 2);
-        drawY = circleY - radius;
-      } else {
-        drawW = radius * 2;
-        drawH = drawW / aspect;
-        drawX = circleX - radius;
-        drawY = circleY - (drawH / 2);
-      }
-
-      ctx.drawImage(uploadedImage, drawX, drawY, drawW, drawH);
+      ctx.drawImage(uploadedImage, finalX, finalY, drawW, drawH);
       ctx.restore();
     }
 
-    // Capture strings from DOM inputs 
     const valName = document.getElementById('nameInput').value.trim() || "Muhammad Sodiq Sulyman";
     const valDest = document.getElementById('destInput').value.trim() || "Minna";
     const valPick = document.getElementById('pickInput').value.trim() || "Ilorin • Jebba • Mokwa • Zungeru • Bida";
 
-    // Set Font System Parameters
-    ctx.textBaseline = "middle";
     ctx.textAlign = "left";
     ctx.fillStyle = "#111111";
 
-    // 1. Text Element Field: Full Name
-    ctx.font = '700 28px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    ctx.fillText(valName, 510, 488);
+    // 1. Text Field: Name
+    ctx.textBaseline = "middle";
+    ctx.font = '700 28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(valName, 495, 518);
 
-    // 2. Text Element Field: Destination City
-    ctx.font = '500 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    ctx.fillText(valDest, 488, 615);
+    // 2. Text Field: Destination City
+    ctx.textBaseline = "top";
+    ctx.font = '500 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(valDest, 475, 634);
 
-    // 3. Text Element Field: Picking Up From
-    ctx.font = '500 21px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    ctx.fillText(valPick, 488, 706);
+    // 3. Text Field: Pick Up From
+    ctx.textBaseline = "top";
+    ctx.font = '500 21px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(valPick, 475, 735);
   }
 
   function downloadFlyer() {
